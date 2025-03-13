@@ -1,24 +1,32 @@
 const AnalyticsService = require('../services/analytics.service');
-const sendResponse = require('../utils/responseHandler');
 
 class AnalyticsController {
-  // Get popular courses analytics
+  // GET /api/analytics/popular-courses
   static async getPopularCourses(req, res, next) {
     try {
+      console.log("working in controller")
       const popularCourses = await AnalyticsService.getPopularCourses();
-      return sendResponse(res, 200, 'success', 'Popular courses retrieved successfully', popularCourses);
-    } catch (err) {
-      next(err);
+      res.status(200).json({
+        status: 'success',
+        message: 'Popular courses retrieved successfully',
+        data: popularCourses,
+      });
+    } catch (error) {
+      next(error);
     }
   }
 
-  // Get assimilation rates analytics
+  // GET /api/analytics/assimilation-rates
   static async getAssimilationRates(req, res, next) {
     try {
       const assimilationRates = await AnalyticsService.getAssimilationRates();
-      return sendResponse(res, 200, 'success', 'Assimilation rates retrieved successfully', assimilationRates);
-    } catch (err) {
-      next(err);
+      res.status(200).json({
+        status: 'success',
+        message: 'Assimilation rates retrieved successfully',
+        data: assimilationRates,
+      });
+    } catch (error) {
+      next(error);
     }
   }
 }

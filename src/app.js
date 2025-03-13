@@ -1,9 +1,9 @@
-// src/app.js
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
+const dotenv = require('dotenv');``
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./docs/swagger');
 
 dotenv.config();
 
@@ -20,13 +20,16 @@ const userRoutes = require('./routes/user.routes');
 const courseRoutes = require('./routes/course.routes');
 const enrollmentRoutes = require('./routes/enrollment.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
-// authRoutes va boshqa route-lar (agar mavjud bo'lsa) qo'shiladi
+const authRoutes = require('./routes/auth.routes');
 
-// Register routes
 app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/auth', authRoutes);
+
+// Swagger UI endpoint
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Global error handling middleware
 const errorHandler = require('./middleware/errorHandler');

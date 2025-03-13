@@ -1,6 +1,6 @@
 // server.js
 const app = require('./app');
-const { sequelize } = require('./models/index'); 
+const sequelize = require('./config/config');
 const host = process.env.HOST || 'localhost';
 // Sync database (jadval avtomatik yaratiladi)
 sequelize.sync()

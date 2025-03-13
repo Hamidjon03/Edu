@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/user.model');
 const { Op } = require('sequelize');
 
@@ -12,7 +13,7 @@ class UserService {
     return await User.findByPk(id);
   }
 
-  // Create a new user with validations
+  // Create a new user with validations and password hashing
   static async createUser(data) {
     try {
       // Check if the email already exists (unique constraint)
@@ -32,6 +33,10 @@ class UserService {
         throw new Error(`Invalid role. Allowed roles: ${validRoles.join(', ')}`);
       }
 
+      // Hash the password before creating the user
+      const saltRounds = 10;
+      data.password = await bcrypt.hash(data.password, saltRounds);
+
       // Create the user
       return await User.create(data);
     } catch (err) {
@@ -40,7 +45,7 @@ class UserService {
     }
   }
 
-  // Update an existing user with validations
+  // Update an existing user with validations and password hashing if updated
   static async updateUser(id, data) {
     try {
       const user = await User.findByPk(id);
@@ -57,6 +62,12 @@ class UserService {
         if (existingUser) {
           throw new Error('Email already in use by another user');
         }
+      }
+      
+      // If password is provided, hash the new password
+      if (data.password) {
+        const saltRounds = 10;
+        data.password = await bcrypt.hash(data.password, saltRounds);
       }
 
       // Update the user record

@@ -1,4 +1,4 @@
-const { Course } = require('../models/course.model');
+const Course = require('../models/course.model');
 
 class CourseService {
   static async getAllCourses() {
