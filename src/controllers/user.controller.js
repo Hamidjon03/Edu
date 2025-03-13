@@ -1,53 +1,65 @@
-const userService = require('../services/user.service');
+const UserService = require('../services/user.service');
+const sendResponse = require('../utils/responseHandler');
 
-// GET /api/users - Retrieve all users
-exports.getAllUsers = async (req, res, next) => {
-  try {
-    const users = await userService.getAllUsers();
-    res.json(users);
-  } catch (err) {
-    next(err);
+class UserController {
+  static async getAllUsers(req, res, next) {
+    try {
+      const users = await UserService.getAllUsers();
+      return sendResponse(res, 200, 'success', 'Users retrieved successfully', users);
+    } catch (err) {
+      err.status = err.status || 500;
+      next(err);
+    }
   }
-};
 
-// GET /api/users/:id - Retrieve a user by its ID
-exports.getUserById = async (req, res, next) => {
-  try {
-    const user = await userService.getUserById(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json(user);
-  } catch (err) {
-    next(err);
+  static async getUserById(req, res, next) {
+    try {
+      const user = await UserService.getUserById(req.params.id);
+      if (!user) {
+        return sendResponse(res, 404, 'error', 'User not found');
+      }
+      return sendResponse(res, 200, 'success', 'User retrieved successfully', user);
+    } catch (err) {
+      err.status = err.status || 500;
+      next(err);
+    }
   }
-};
 
-// POST /api/users - Create a new user
-exports.createUser = async (req, res, next) => {
-  try {
-    const newUser = await userService.createUser(req.body);
-    res.status(201).json(newUser);
-  } catch (err) {
-    next(err);
+  static async createUser(req, res, next) {
+    try {
+      const newUser = await UserService.createUser(req.body);
+      return sendResponse(res, 201, 'success', 'User created successfully', newUser);
+    } catch (err) {
+      err.status = err.status || 500;
+      next(err);
+    }
   }
-};
 
-// PUT /api/users/:id - Update an existing user
-exports.updateUser = async (req, res, next) => {
-  try {
-    const updatedUser = await userService.updateUser(req.params.id, req.body);
-    if (!updatedUser) return res.status(404).json({ message: 'User not found' });
-    res.json(updatedUser);
-  } catch (err) {
-    next(err);
+  static async updateUser(req, res, next) {
+    try {
+      const updatedUser = await UserService.updateUser(req.params.id, req.body);
+      if (!updatedUser) {
+        return sendResponse(res, 404, 'error', 'User not found');
+      }
+      return sendResponse(res, 200, 'success', 'User updated successfully', updatedUser);
+    } catch (err) {
+      err.status = err.status || 500;
+      next(err);
+    }
   }
-};
 
-// DELETE /api/users/:id - Delete a user by its ID
-exports.deleteUser = async (req, res, next) => {
-  try {
-    await userService.deleteUser(req.params.id);
-    res.status(204).send();
-  } catch (err) {
-    next(err);
+  static async deleteUser(req, res, next) {
+    try {
+      const deleted = await UserService.deleteUser(req.params.id);
+      if (!deleted) {
+        return sendResponse(res, 404, 'error', 'User not found');
+      }
+      return sendResponse(res, 200, 'success', 'User deleted successfully');
+    } catch (err) {
+      err.status = err.status || 500;
+      next(err);
+    }
   }
-};
+}
+
+module.exports = UserController;

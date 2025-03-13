@@ -1,9 +1,9 @@
+// src/routes/analyticsRoutes.js
 const express = require('express');
+const AnalyticsController = require('../controllers/analytics.controller');
 const router = express.Router();
-const analyticsController = require('../controllers/analytics.controller');
 
-// Analytics routes
-router.get('/popular-courses', analyticsController.getPopularCourses);
-router.get('/assimilation-rates', analyticsController.getAssimilationRates);
+router.get('/popular-courses', AnalyticsController.getPopularCourses);
+router.get('/assimilation-rates', AnalyticsController.getAssimilationRates);
 
 module.exports = router;

@@ -1,22 +1,30 @@
-const db = require("../config/db");
-const Course = require("../models/course.model");
+const { Course } = require('../models/course.model');
 
-exports.getAllCourses = async () => {
-  return await Course.findAll();
-};
+class CourseService {
+  static async getAllCourses() {
+    return await Course.findAll();
+  }
 
-exports.getCourseById = async (id) => {
-  return await Course.findById(id);
-};
+  static async getCourseById(id) {
+    return await Course.findByPk(id);
+  }
 
-exports.createCourse = async (courseData) => {
-  return await Course.create(courseData);
-};
+  static async createCourse(data) {
+    return await Course.create(data);
+  }
 
-exports.updateCourse = async (id, courseData) => {
-  return await Course.update(id, courseData);
-};
+  static async updateCourse(id, data) {
+    const course = await Course.findByPk(id);
+    if (!course) return null;
+    return await course.update(data);
+  }
 
-exports.deleteCourse = async (id) => {
-  await Course.delete(id);
-};
+  static async deleteCourse(id) {
+    const course = await Course.findByPk(id);
+    if (!course) return null;
+    await course.destroy();
+    return true;
+  }
+}
+
+module.exports = CourseService;

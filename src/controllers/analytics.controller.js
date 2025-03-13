@@ -1,21 +1,26 @@
-const analyticsService = require('../services/analytics.service');
+const AnalyticsService = require('../services/analytics.service');
+const sendResponse = require('../utils/responseHandler');
 
-// GET /api/analytics/popular-courses - Retrieve popular courses data
-exports.getPopularCourses = async (req, res, next) => {
-  try {
-    const popularCourses = await analyticsService.getPopularCourses();
-    res.json(popularCourses);
-  } catch (error) {
-    next(error);
+class AnalyticsController {
+  // Get popular courses analytics
+  static async getPopularCourses(req, res, next) {
+    try {
+      const popularCourses = await AnalyticsService.getPopularCourses();
+      return sendResponse(res, 200, 'success', 'Popular courses retrieved successfully', popularCourses);
+    } catch (err) {
+      next(err);
+    }
   }
-};
 
-// GET /api/analytics/assimilation-rates - Retrieve assimilation rates data
-exports.getAssimilationRates = async (req, res, next) => {
-  try {
-    const assimilationRates = await analyticsService.getAssimilationRates();
-    res.json(assimilationRates);
-  } catch (error) {
-    next(error);
+  // Get assimilation rates analytics
+  static async getAssimilationRates(req, res, next) {
+    try {
+      const assimilationRates = await AnalyticsService.getAssimilationRates();
+      return sendResponse(res, 200, 'success', 'Assimilation rates retrieved successfully', assimilationRates);
+    } catch (err) {
+      next(err);
+    }
   }
-};
+}
+
+module.exports = AnalyticsController;

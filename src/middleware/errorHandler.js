@@ -1,10 +1,6 @@
-// Global error handling middleware
+const sendResponse = require('../utils/responseHandler');
+
 module.exports = (err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-      error: {
-        message: err.message || 'Internal Server Error'
-      }
-    });
-  };
-  
+  const statusCode = err.status || 500;
+  sendResponse(res, statusCode, 'error', err.message || 'Internal Server Error');
+};

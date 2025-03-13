@@ -1,26 +1,31 @@
+// src/services/enrollmentService.js
 const Enrollment = require('../models/enrollment.model');
 
-// Retrieve all enrollments via the model
-exports.getAllEnrollments = async () => {
-  return await Enrollment.findAll();
-};
+class EnrollmentService {
+  static async getAllEnrollments() {
+    return await Enrollment.findAll();
+  }
 
-// Retrieve a single enrollment by its ID via the model
-exports.getEnrollmentById = async (id) => {
-  return await Enrollment.findById(id);
-};
+  static async getEnrollmentById(id) {
+    return await Enrollment.findByPk(id);
+  }
 
-// Create a new enrollment record using the model
-exports.createEnrollment = async (enrollmentData) => {
-  return await Enrollment.create(enrollmentData);
-};
+  static async createEnrollment(data) {
+    return await Enrollment.create(data);
+  }
 
-// Update an existing enrollment record using the model
-exports.updateEnrollment = async (id, enrollmentData) => {
-  return await Enrollment.update(id, enrollmentData);
-};
+  static async updateEnrollment(id, data) {
+    const enrollment = await Enrollment.findByPk(id);
+    if (!enrollment) return null;
+    return await enrollment.update(data);
+  }
 
-// Delete an enrollment record using the model
-exports.deleteEnrollment = async (id) => {
-  await Enrollment.delete(id);
-};
+  static async deleteEnrollment(id) {
+    const enrollment = await Enrollment.findByPk(id);
+    if (!enrollment) return null;
+    await enrollment.destroy();
+    return true;
+  }
+}
+
+module.exports = EnrollmentService;

@@ -13,21 +13,20 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-app.use(morgan('combined'));
+// app.use(morgan('combined'));
 
 // Import routes
+const userRoutes = require('./routes/user.routes');
 const courseRoutes = require('./routes/course.routes');
-const analyticsRoutes = require('./routes/analytics.routes');
 const enrollmentRoutes = require('./routes/enrollment.routes');
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes'); // Yangi user marshruti
+const analyticsRoutes = require('./routes/analytics.routes');
+// authRoutes va boshqa route-lar (agar mavjud bo'lsa) qo'shiladi
 
 // Register routes
+app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api/analytics', analyticsRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes); // Yangi user endpoint
+app.use('/api/analytics', analyticsRoutes);
 
 // Global error handling middleware
 const errorHandler = require('./middleware/errorHandler');
