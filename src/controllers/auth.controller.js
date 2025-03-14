@@ -1,10 +1,10 @@
-// src/controllers/auth.controller.js
 const authService = require('../services/auth.service');
+const sendResponse = require('../utils/responseHandler');
 
 exports.login = async (req, res, next) => {
   try {
     const tokens = await authService.login(req.body);
-    res.json(tokens);
+    return sendResponse(res, 200, 'success', 'Login successful', tokens);
   } catch (err) {
     next(err);
   }
@@ -13,7 +13,7 @@ exports.login = async (req, res, next) => {
 exports.refreshToken = async (req, res, next) => {
   try {
     const result = await authService.refreshToken(req.body.refreshToken);
-    res.json(result);
+    return sendResponse(res, 200, 'success', 'Token refreshed successfully', result);
   } catch (err) {
     next(err);
   }

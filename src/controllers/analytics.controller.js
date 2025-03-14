@@ -1,21 +1,34 @@
-const analyticsService = require('../services/analytics.service');
+const AnalyticsService = require('../services/analytics.service');
 
-// GET /api/analytics/popular-courses - Retrieve popular courses data
-exports.getPopularCourses = async (req, res, next) => {
-  try {
-    const popularCourses = await analyticsService.getPopularCourses();
-    res.json(popularCourses);
-  } catch (error) {
-    next(error);
+class AnalyticsController {
+  // GET /api/analytics/popular-courses
+  static async getPopularCourses(req, res, next) {
+    try {
+      console.log("working in controller")
+      const popularCourses = await AnalyticsService.getPopularCourses();
+      res.status(200).json({
+        status: 'success',
+        message: 'Popular courses retrieved successfully',
+        data: popularCourses,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-};
 
-// GET /api/analytics/assimilation-rates - Retrieve assimilation rates data
-exports.getAssimilationRates = async (req, res, next) => {
-  try {
-    const assimilationRates = await analyticsService.getAssimilationRates();
-    res.json(assimilationRates);
-  } catch (error) {
-    next(error);
+  // GET /api/analytics/assimilation-rates
+  static async getAssimilationRates(req, res, next) {
+    try {
+      const assimilationRates = await AnalyticsService.getAssimilationRates();
+      res.status(200).json({
+        status: 'success',
+        message: 'Assimilation rates retrieved successfully',
+        data: assimilationRates,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-};
+}
+
+module.exports = AnalyticsController;
