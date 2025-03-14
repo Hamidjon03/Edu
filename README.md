@@ -20,7 +20,7 @@ Loyihani o'rnatish uchun quyidagi qadamlarni bajaring:
 
 ```bash
 # Loyihani klonlash
-git clone [repository_url]
+git clone https://github.com/Hamidjon03/Edu.git
 cd Edu
 
 # Kerakli paketlarni o'rnatish
