@@ -4,6 +4,7 @@ const router = express.Router();
 const { login, refreshToken, register, logout } = require('../controllers/auth.controller');
 const { check, validationResult } = require('express-validator');
 const { authenticate, authorize } = require('../middleware/role');
+const sendResponse = require('../utils/responseHandler');
 
 
 /**
@@ -66,7 +67,7 @@ router.post('/register', [
 ], (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
+    return sendResponse(res, 422, 'error', 'Validation failed', { errors: errors.array() });
   }
   next();
 }, register);
@@ -116,7 +117,7 @@ router.post('/logout', authenticate, [
 ], (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
+    return sendResponse(res, 422, 'error', 'Validation failed', { errors: errors.array() });
   }
   next();
 }, logout);
@@ -182,7 +183,7 @@ router.post('/login', [
 ], (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
+    return sendResponse(res, 422, 'error', 'Validation failed', { errors: errors.array() });
   }
   next();
 }, login);
@@ -225,7 +226,7 @@ router.post('/refresh', [
 ], (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.array() });
+    return sendResponse(res, 422, 'error', 'Validation failed', { errors: errors.array() });
   }
   next();
 }, refreshToken);

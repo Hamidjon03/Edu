@@ -2,6 +2,9 @@
 const express = require('express');
 const CourseController = require('../controllers/course.controller');
 const router = express.Router();
+const { authenticate, authorize } = require('../middleware/role');
+const { check, validationResult } = require('express-validator');
+const sendResponse = require('../utils/responseHandler');
 
 /**
  * @swagger
@@ -24,8 +27,6 @@ const router = express.Router();
  *   get:
  *     summary: Retrieve a list of courses
  *     tags: [Courses]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of courses.
@@ -61,7 +62,7 @@ router.get('/', CourseController.getAllCourses);
  *       404:
  *         description: Course not found.
  */
-router.get('/:id', CourseController.getCourseById);
+router.get('/:id', authenticate, authorize(['admin', 'instructor', 'student']), CourseController.getCourseById);
 
 /**
  * @swagger
@@ -69,6 +70,8 @@ router.get('/:id', CourseController.getCourseById);
  *   post:
  *     summary: Create a new course
  *     tags: [Courses]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       description: Course object that needs to be added.
  *       required: true
@@ -85,8 +88,21 @@ router.get('/:id', CourseController.getCourseById);
  *               $ref: '#/components/schemas/Course'
  *       400:
  *         description: Bad request.
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  */
-router.post('/', CourseController.createCourse);
+router.post('/', authenticate, authorize(['admin', 'instructor']), [
+    check('title').isLength({ min: 5, max: 50 }),
+    check('description').isLength({ min: 10, max: 200 }),
+], (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return sendResponse(res, 400, { errors: errors.array() });
+    }
+    next();
+}, CourseController.createCourse);
 
 /**
  * @swagger
@@ -94,6 +110,8 @@ router.post('/', CourseController.createCourse);
  *   put:
  *     summary: Update an existing course
  *     tags: [Courses]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -115,10 +133,23 @@ router.post('/', CourseController.createCourse);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Course'
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: Course not found.
  */
-router.put('/:id', CourseController.updateCourse);
+router.put('/:id', authenticate, authorize(['admin', 'instructor']), [
+    check('title').isLength({ min: 5, max: 50 }),
+    check('description').isLength({ min: 10, max: 200 }),
+], (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return sendResponse(res, 400, { errors: errors.array() });
+    }
+    next();
+}, CourseController.updateCourse);
 
 /**
  * @swagger
@@ -126,6 +157,8 @@ router.put('/:id', CourseController.updateCourse);
  *   delete:
  *     summary: Delete a course by ID
  *     tags: [Courses]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -136,9 +169,13 @@ router.put('/:id', CourseController.updateCourse);
  *     responses:
  *       200:
  *         description: Course deleted successfully.
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: Course not found.
  */
-router.delete('/:id', CourseController.deleteCourse);
+router.delete('/:id', authenticate, authorize(['admin']), CourseController.deleteCourse);
 
 module.exports = router;

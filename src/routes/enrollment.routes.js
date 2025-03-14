@@ -2,6 +2,29 @@
 const express = require('express');
 const EnrollmentController = require('../controllers/enrollment.controller');
 const router = express.Router();
+const { authenticate, authorize } = require('../middleware/role');
+const { check, validationResult } = require('express-validator');
+const sendResponse = require('../utils/responseHandler');
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Enrollment:
+ *       type: object
+ *       properties:
+ *         userId:
+ *           type: string
+ *           format: uuid
+ *         courseId:
+ *           type: string
+ *           format: uuid
+ *         completed:
+ *           type: boolean
+ *       required:
+ *         - userId
+ *         - courseId
+ */
 
 /**
  * @swagger
@@ -16,6 +39,8 @@ const router = express.Router();
  *   get:
  *     summary: Retrieve a list of enrollments
  *     tags: [Enrollments]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of enrollments.
@@ -24,18 +49,13 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   userId:
- *                     type: string
- *                     format: uuid
- *                   courseId:
- *                     type: string
- *                     format: uuid
- *                   completed:
- *                     type: boolean
+ *                 $ref: '#/components/schemas/Enrollment'
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  */
-router.get('/', EnrollmentController.getAllEnrollments);
+router.get('/', authenticate, authorize(['admin']), EnrollmentController.getAllEnrollments);
 
 /**
  * @swagger
@@ -43,6 +63,8 @@ router.get('/', EnrollmentController.getAllEnrollments);
  *   get:
  *     summary: Retrieve a specific enrollment by ID
  *     tags: [Enrollments]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -57,23 +79,15 @@ router.get('/', EnrollmentController.getAllEnrollments);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   format: uuid
- *                 userId:
- *                   type: string
- *                   format: uuid
- *                 courseId:
- *                   type: string
- *                   format: uuid
- *                 completed:
- *                   type: boolean
+ *               $ref: '#/components/schemas/Enrollment'
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: Enrollment not found.
  */
-router.get('/:id', EnrollmentController.getEnrollmentById);
+router.get('/:id', authenticate, authorize(['admin', 'student']), EnrollmentController.getEnrollmentById);
 
 /**
  * @swagger
@@ -81,48 +95,38 @@ router.get('/:id', EnrollmentController.getEnrollmentById);
  *   post:
  *     summary: Create a new enrollment
  *     tags: [Enrollments]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       description: Enrollment object to be added.
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *                 format: uuid
- *               courseId:
- *                 type: string
- *                 format: uuid
- *               completed:
- *                 type: boolean
- *             required:
- *               - userId
- *               - courseId
+ *             $ref: '#/components/schemas/Enrollment'
  *     responses:
  *       201:
  *         description: Enrollment created successfully.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   format: uuid
- *                 userId:
- *                   type: string
- *                   format: uuid
- *                 courseId:
- *                   type: string
- *                   format: uuid
- *                 completed:
- *                   type: boolean
+ *               $ref: '#/components/schemas/Enrollment'
  *       400:
  *         description: Bad request.
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
  */
-router.post('/', EnrollmentController.createEnrollment);
+router.post('/', authenticate, [
+  check('userId').isUUID().withMessage('Valid user ID is required'),
+  check('courseId').isUUID().withMessage('Valid course ID is required'),
+  check('completed').optional().isBoolean().withMessage('Completed must be a boolean value')
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendResponse(res, 400, 'error', 'Validation failed', { errors: errors.array() });
+  }
+  next();
+}, EnrollmentController.createEnrollment);
 
 /**
  * @swagger
@@ -130,6 +134,8 @@ router.post('/', EnrollmentController.createEnrollment);
  *   put:
  *     summary: Update an existing enrollment
  *     tags: [Enrollments]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -144,39 +150,34 @@ router.post('/', EnrollmentController.createEnrollment);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: string
- *                 format: uuid
- *               courseId:
- *                 type: string
- *                 format: uuid
- *               completed:
- *                 type: boolean
+ *             $ref: '#/components/schemas/Enrollment'
  *     responses:
  *       200:
  *         description: Enrollment updated successfully.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   format: uuid
- *                 userId:
- *                   type: string
- *                   format: uuid
- *                 courseId:
- *                   type: string
- *                   format: uuid
- *                 completed:
- *                   type: boolean
+ *               $ref: '#/components/schemas/Enrollment'
+ *       400:
+ *         description: Bad request.
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: Enrollment not found.
  */
-router.put('/:id', EnrollmentController.updateEnrollment);
+router.put('/:id', authenticate, authorize(['admin', 'student']), [
+  check('userId').isUUID().withMessage('Valid user ID is required'),
+  check('courseId').isUUID().withMessage('Valid course ID is required'),
+  check('completed').optional().isBoolean().withMessage('Completed must be a boolean value')
+], (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return sendResponse(res, 400, 'error', 'Validation failed', { errors: errors.array() });
+  }
+  next();
+}, EnrollmentController.updateEnrollment);
 
 /**
  * @swagger
@@ -184,6 +185,8 @@ router.put('/:id', EnrollmentController.updateEnrollment);
  *   delete:
  *     summary: Delete an enrollment by ID
  *     tags: [Enrollments]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -195,9 +198,13 @@ router.put('/:id', EnrollmentController.updateEnrollment);
  *     responses:
  *       200:
  *         description: Enrollment deleted successfully.
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: Enrollment not found.
  */
-router.delete('/:id', EnrollmentController.deleteEnrollment);
+router.delete('/:id', authenticate, authorize(['admin']), EnrollmentController.deleteEnrollment);
 
 module.exports = router;

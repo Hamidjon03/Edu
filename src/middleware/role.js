@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const sendResponse = require('../utils/responseHandler');
 
 // Authentication middleware
 const authenticate = (req, res, next) => {
@@ -6,7 +7,7 @@ const authenticate = (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1]; // Bearer token
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized: No token provided.' });
+    return sendResponse(res, 401, 'error', 'Unauthorized: No token provided.');
   }
   
   try {
@@ -14,7 +15,7 @@ const authenticate = (req, res, next) => {
     req.user = decoded; // Add decoded user data to request object
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Unauthorized: Invalid token.' });
+    return sendResponse(res, 401, 'error', 'Unauthorized: Invalid token.');
   }
 };
 
@@ -26,11 +27,11 @@ const authorize = (roles = []) => {
   
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Unauthorized: No token provided' });
+      return sendResponse(res, 401, 'error', 'Unauthorized: No token provided');
     }
     
     if (roles.length && !roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Forbidden: Insufficient permissions' });
+      return sendResponse(res, 403, 'error', 'Forbidden: Insufficient permissions');
     }
     
     next();

@@ -3,7 +3,8 @@ const express = require('express');
 const UserController = require('../controllers/user.controller');
 const router = express.Router();
 const { authenticate, authorize } = require('../middleware/role');
-
+const { check, validationResult } = require('express-validator');
+const sendResponse = require('../utils/responseHandler');
 
 /**
  * @swagger
