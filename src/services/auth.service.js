@@ -44,6 +44,45 @@ exports.login = async ({ username, password }) => {
   return { accessToken, refreshToken: refreshTokenPlain };
 };
 
+exports.register = async (userData) => {
+  // Check if user already exists
+  const existingUser = await User.findOne({ where: { email: userData.email } });
+  if (existingUser) {
+    throw new Error('User with this email already exists');
+  }
+  
+  // Hash password
+  const hashedPassword = await bcrypt.hash(userData.password, SALT_ROUNDS);
+  
+  // Create user with hashed password
+  const user = await User.create({
+    ...userData,
+    password: hashedPassword
+  });
+  
+  // Return user without password
+  const { password, ...userWithoutPassword } = user.toJSON();
+  return userWithoutPassword;
+};
+
+exports.logout = async (refreshToken, userId) => {
+  const parts = refreshToken.split('.');
+  if (parts.length !== 2) {
+    throw new Error('Invalid refresh token format');
+  }
+  const token_id = parts[0];
+  
+  // Delete the refresh token
+  await RefreshToken.destroy({ 
+    where: { 
+      token_id,
+      user_id: userId 
+    } 
+  });
+  
+  return true;
+};
+
 exports.refreshToken = async (refreshToken) => {
   // Refresh tokenni token_id va tokenSecret qismlariga bo'lamiz
   const parts = refreshToken.split('.');

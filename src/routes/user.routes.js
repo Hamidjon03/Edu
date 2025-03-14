@@ -2,6 +2,8 @@
 const express = require('express');
 const UserController = require('../controllers/user.controller');
 const router = express.Router();
+const { authenticate, authorize } = require('../middleware/role');
+
 
 /**
  * @swagger
@@ -30,6 +32,8 @@ const router = express.Router();
  *   get:
  *     summary: Retrieve a list of users
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of users.
@@ -39,8 +43,11 @@ const router = express.Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
  */
-router.get('/', UserController.getAllUsers);
+router.get('/', authenticate, UserController.getAllUsers);
+
 
 /**
  * @swagger
@@ -48,6 +55,8 @@ router.get('/', UserController.getAllUsers);
  *   get:
  *     summary: Retrieve a single user by ID
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -62,17 +71,22 @@ router.get('/', UserController.getAllUsers);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: User not found.
  */
-router.get('/:id', UserController.getUserById);
-
+router.get('/:id', authenticate, authorize(['admin']), UserController.getUserById);
 /**
  * @swagger
  * /users:
  *   post:
  *     summary: Create a new user
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       description: User object that needs to be added.
  *       required: true
@@ -89,8 +103,12 @@ router.get('/:id', UserController.getUserById);
  *               $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad request.
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  */
-router.post('/', UserController.createUser);
+router.post('/', authenticate, authorize(['admin']), UserController.createUser);
 
 /**
  * @swagger
@@ -98,6 +116,8 @@ router.post('/', UserController.createUser);
  *   put:
  *     summary: Update an existing user
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -119,10 +139,14 @@ router.post('/', UserController.createUser);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: User not found.
  */
-router.put('/:id', UserController.updateUser);
+router.put('/:id', authenticate, authorize(['admin']), UserController.updateUser);
 
 /**
  * @swagger
@@ -130,6 +154,8 @@ router.put('/:id', UserController.updateUser);
  *   delete:
  *     summary: Delete a user by ID
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -140,9 +166,13 @@ router.put('/:id', UserController.updateUser);
  *     responses:
  *       200:
  *         description: User deleted successfully.
+ *       401:
+ *         description: Unauthorized - No token provided or invalid token.
+ *       403:
+ *         description: Forbidden - Insufficient permissions.
  *       404:
  *         description: User not found.
  */
-router.delete('/:id', UserController.deleteUser);
+router.delete('/:id', authenticate, authorize(['admin']), UserController.deleteUser);
 
 module.exports = router;

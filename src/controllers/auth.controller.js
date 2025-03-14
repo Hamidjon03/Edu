@@ -10,6 +10,26 @@ exports.login = async (req, res, next) => {
   }
 };
 
+
+exports.register = async (req, res, next) => {
+  try {
+    const user = await authService.register(req.body);
+    return sendResponse(res, 201, 'success', 'Registration successful', { user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+exports.logout = async (req, res, next) => {
+  try {
+    await authService.logout(req.body.refreshToken, req.user.id);
+    return sendResponse(res, 200, 'success', 'Logged out successfully', {});
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.refreshToken = async (req, res, next) => {
   try {
     const result = await authService.refreshToken(req.body.refreshToken);
